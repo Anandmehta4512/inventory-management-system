@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Inventory and Stock Management System
 
 Full-stack inventory web application implementing core Data Structures:
@@ -13,3 +14,6 @@ Full-stack inventory web application implementing core Data Structures:
 1. Start backend server:
    ```bash
    uvicorn backend.main:app --reload
+=======
+# inventory-management-system
+>>>>>>> 4c3fc12b288898ab3398e1600f4f42ba5b550fd2
