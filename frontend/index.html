@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoho Inventory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --zoho-yellow-strip: #fffde8;
+            --zoho-yellow-border: #fef08a;
+            --zoho-navy-header: #21263c;
+            --zoho-search-box: #303752;
+            --zoho-sidebar-canvas: #f7f8fd;
+            --zoho-parent-pill: #ebeafa;
+            --zoho-active-blue: #488df4;
+            --zoho-active-hover: #357ae8;
+            --zoho-primary-blue: #159aff;
+            --zoho-text-navy: #21263c;
+            --zoho-body-bg: #f5f7fa;
+            --zoho-border-subtle: #e6e8f0;
+        }
+
+        body {
+            background-color: var(--zoho-body-bg);
+            color: var(--zoho-text-navy);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .zoho-header { background-color: var(--zoho-navy-header); }
+        .zoho-search-input { background-color: var(--zoho-search-box); }
+        .zoho-sidebar { background-color: var(--zoho-sidebar-canvas); }
+
+        /* Parent Group Item (Home, Items, Sales, Purchases) */
+        .zoho-parent-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #3b4256;
+            transition: all 0.15s ease;
+        }
+
+        .zoho-parent-pill:hover {
+            background-color: #ebeafa;
+            color: #111827;
+        }
+
+        /* Sub-Item Pill (Items Master, Sales Orders, Purchase Orders) */
+        .zoho-sub-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0.45rem 0.75rem;
+            border-radius: 0.35rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #4b5563;
+            transition: all 0.15s ease;
+        }
+
+        .zoho-sub-pill:hover {
+            background-color: #ebeafa;
+            color: #111827;
+        }
+
+        /* Exact Active Blue Pill (White Text, Vibrant Blue Background) */
+        .zoho-pill-active {
+            background-color: var(--zoho-active-blue) !important;
+            color: #ffffff !important;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(72, 141, 244, 0.25);
+        }
+
+        .zoho-pill-active i, .zoho-pill-active span {
+            color: #ffffff !important;
+        }
+
+        /* Soft Active Pill for Parent when on Home/Dashboard */
+        .zoho-parent-active {
+            background-color: var(--zoho-parent-pill) !important;
+            color: var(--zoho-text-navy) !important;
+            font-weight: 600;
+        }
+
+        .zoho-btn-action {
+            background-color: var(--zoho-active-blue);
+            color: #ffffff;
+        }
+        .zoho-btn-action:hover {
+            background-color: var(--zoho-active-hover);
+        }
+
+        .step-box {
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col overflow-hidden">
+
+    <!-- ========================================== -->
+    <!-- 1. FULLSCREEN ZOHO AUTH VIEW -->
+    <!-- ========================================== -->
+    <div id="authScreen" class="fixed inset-0 z-50 bg-[#f7f7f7] flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl border border-slate-200/80 w-full max-w-4xl overflow-hidden flex flex-col md:flex-row">
+            
+            <!-- Left Side: Login / Register Form -->
+            <div class="w-full md:w-1/2 p-8 sm:p-10 flex flex-col justify-between">
+                <div>
+                    <!-- Zoho Multi-color 4-Tile Logo -->
+                    <div class="flex items-center gap-1.5 mb-6">
+                        <span class="w-4 h-4 rounded-sm bg-[#e42528]"></span>
+                        <span class="w-4 h-4 rounded-sm bg-[#2ba84a]"></span>
+                        <span class="w-4 h-4 rounded-sm bg-[#159aff]"></span>
+                        <span class="w-4 h-4 rounded-sm bg-[#f6b426]"></span>
+                        <span class="ml-2 font-bold text-slate-800 tracking-wider text-sm uppercase">ZOHO</span>
+                    </div>
+
+                    <!-- LOGIN CONTAINER -->
+                    <div id="loginBox">
+                        <h2 class="text-xl font-bold text-slate-900 mb-1">Sign in</h2>
+                        <p class="text-xs text-slate-500 mb-6">to access Inventory dashboard</p>
+
+                        <form id="loginForm" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Email address</label>
+                                <input type="email" id="login_email" value="admin@stockdesk.com" required class="w-full border border-slate-300 rounded px-3.5 py-2.5 text-sm focus:border-[#159aff] focus:ring-1 focus:ring-[#159aff] outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                                <input type="password" id="login_password" value="admin123" required class="w-full border border-slate-300 rounded px-3.5 py-2.5 text-sm focus:border-[#159aff] focus:ring-1 focus:ring-[#159aff] outline-none transition">
+                            </div>
+                            <button type="submit" class="w-full py-2.5 bg-[#159aff] hover:bg-[#0c85e6] text-white font-medium rounded text-sm transition">Sign In</button>
+                        </form>
+
+                        <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 flex justify-between items-center">
+                            <span>Don't have a Zoho account?</span>
+                            <button onclick="toggleAuth('signup')" class="text-[#159aff] font-semibold hover:underline">Sign up now</button>
+                        </div>
+                    </div>
+
+                    <!-- SIGNUP CONTAINER -->
+                    <div id="signupBox" class="hidden">
+                        <h2 class="text-xl font-bold text-slate-900 mb-1">Let's get started</h2>
+                        <p class="text-xs text-slate-500 mb-6">Create your company inventory account</p>
+
+                        <form id="signupForm" class="space-y-3.5">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+                                <input type="text" id="reg_name" placeholder="John Doe" required class="w-full border border-slate-300 rounded px-3.5 py-2 text-sm focus:border-[#159aff] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Business Email Address</label>
+                                <input type="email" id="reg_email" placeholder="user@company.com" required class="w-full border border-slate-300 rounded px-3.5 py-2 text-sm focus:border-[#159aff] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                                <input type="password" id="reg_password" placeholder="••••••••" required class="w-full border border-slate-300 rounded px-3.5 py-2 text-sm focus:border-[#159aff] outline-none">
+                            </div>
+                            <button type="submit" class="w-full py-2.5 bg-[#e42528] hover:bg-[#c91d20] text-white font-medium rounded text-sm transition mt-2">Create your account</button>
+                        </form>
+
+                        <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 flex justify-between items-center">
+                            <span>Already have an account?</span>
+                            <button onclick="toggleAuth('login')" class="text-[#159aff] font-semibold hover:underline">Sign In</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-[11px] text-slate-400 mt-6">
+                    © 2026, Zoho Corporation Pvt. Ltd. All Rights Reserved.
+                </div>
+            </div>
+
+            <!-- Right Illustration Showcase -->
+            <div class="hidden md:flex w-1/2 bg-[#fffdf0] border-l border-slate-100 p-8 flex-col justify-center items-center text-center">
+                <div class="w-24 h-24 mb-6 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-4xl text-[#159aff]">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 mb-2">Complete Inventory & Order Control</h3>
+                <p class="text-xs text-slate-600 max-w-xs leading-relaxed">
+                    Track stock across multi-channels, auto-deduct sales, generate invoices, and log purchase receives with custom DSA algorithms.
+                </p>
+                <div class="mt-8 flex items-center gap-2 text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    <i class="fa-solid fa-shield-halved"></i> Enterprise Role Authentication
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. TOP VERIFICATION STRIP (#fffde8) -->
+    <!-- ========================================== -->
+    <div class="h-7 bg-[#fffde8] border-b border-[#fef08a] px-6 text-[11px] text-slate-600 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+            <span>Verify your Zoho account to start invoicing your customers.</span>
+            <button class="bg-[#159aff] text-white text-[10px] font-semibold px-2 py-0.5 rounded hover:bg-[#0c85e6]">VERIFY ACCOUNT</button>
+        </div>
+        <div class="text-[11px] font-medium text-slate-500">
+            Zoho Inventory India Helpline: <span class="font-bold text-slate-700">18005726671</span> (Toll Free)
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 3. MAIN NAVY HEADER (#21263c) -->
+    <!-- ========================================== -->
+    <header class="h-12 bg-[#21263c] text-white flex items-center justify-between px-6 shrink-0 border-b border-slate-800">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2 font-bold tracking-tight text-white cursor-pointer" onclick="switchTab('dashboard')">
+                <i class="fa-solid fa-cart-flatbed-suitcase text-blue-400 text-lg"></i>
+                <span class="text-[15px] font-semibold">Inventory</span>
+            </div>
+
+            <div class="relative w-80 hidden md:block">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2 text-xs text-slate-400"></i>
+                <input type="text" id="hashSearchInput" placeholder="Search in Items / O(1) Lookup ( / )" class="w-full bg-[#303752] border border-slate-700 rounded pl-8 pr-3 py-1 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-400">
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs">
+            <span class="text-slate-400">Organization: <b id="userOrgName" class="text-white font-medium">Enterprise</b></span>
+            
+            <button onclick="handleNewBtnAction()" title="Add New Item" class="w-6 h-6 rounded bg-[#488df4] text-white flex items-center justify-center font-bold text-xs hover:bg-[#357ae8]">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+            </button>
+
+            <div class="h-4 w-[1px] bg-slate-700"></div>
+
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-slate-200 text-[#21263c] flex items-center justify-center text-xs font-bold" id="userAvatar">A</div>
+                <span class="text-slate-200 font-medium hidden sm:inline" id="userDisplayName">Administrator</span>
+            </div>
+
+            <button onclick="handleLogout()" title="Logout" class="text-slate-400 hover:text-rose-400 text-sm pl-2 transition">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 4. SUB-HEADER BAR (WITH ACTIONS) -->
+    <!-- ========================================== -->
+    <div class="h-12 bg-white border-b border-[#e2e8f0] px-6 flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center gap-2">
+            <h2 id="subHeaderTitle" class="text-base font-bold text-slate-800 flex items-center gap-1.5 cursor-pointer">
+                Dashboard <i class="fa-solid fa-chevron-down text-[11px] text-slate-500"></i>
+            </h2>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="handleNewBtnAction()" class="px-3.5 py-1.5 bg-[#488df4] hover:bg-[#357ae8] text-white text-xs font-semibold rounded flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-plus text-[10px]"></i> New
+            </button>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 5. SIDEBAR (#f7f8fd) + WORKSPACE CANVAS -->
+    <!-- ========================================== -->
+    <div class="flex-1 flex overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-56 bg-[#f7f8fd] border-r border-[#e6e8f0] flex flex-col justify-between shrink-0 select-none overflow-y-auto">
+            <div class="p-2 space-y-1">
+                <!-- Home / Dashboard -->
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="zoho-parent-pill zoho-pill-active">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-house w-4 text-center"></i>
+                        <span>Home</span>
+                    </div>
+                </button>
+
+                <!-- Items Section -->
+                <div class="pt-1">
+                    <div class="zoho-parent-pill" id="group-items">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-box-archive w-4 text-center text-slate-500"></i>
+                            <span class="font-medium text-slate-700">Items</span>
+                        </div>
+                    </div>
+                    <div class="pl-2 pt-0.5 space-y-0.5">
+                        <button onclick="switchTab('items')" id="btn-items" class="zoho-sub-pill">
+                            <span>Items Master</span>
+                            <i class="fa-solid fa-plus text-[10px] text-slate-400"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sales Section -->
+                <div class="pt-1">
+                    <div class="zoho-parent-pill" id="group-sales">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-cart-shopping w-4 text-center text-slate-500"></i>
+                            <span class="font-medium text-slate-700">Sales</span>
+                        </div>
+                    </div>
+                    <div class="pl-2 pt-0.5 space-y-0.5">
+                        <button onclick="switchTab('sales')" id="btn-sales" class="zoho-sub-pill">
+                            <span>Sales Orders</span>
+                            <i class="fa-solid fa-plus text-[10px] text-slate-400"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Purchases Section -->
+                <div class="pt-1">
+                    <div class="zoho-parent-pill" id="group-purchases">
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-truck-ramp-box w-4 text-center text-slate-500"></i>
+                            <span class="font-medium text-slate-700">Purchases</span>
+                        </div>
+                    </div>
+                    <div class="pl-2 pt-0.5 space-y-0.5">
+                        <button onclick="switchTab('purchases')" id="btn-purchases" class="zoho-sub-pill">
+                            <span>Purchase Orders</span>
+                            <i class="fa-solid fa-plus text-[10px] text-slate-400"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Engine Details -->
+            <div class="p-3 border-t border-[#e6e8f0] bg-white/70 text-[11px] text-slate-500 space-y-1">
+                <p class="font-bold text-slate-700">DSA Stack Active:</p>
+                <p>• Hash Map: <span class="text-[#488df4] font-mono font-semibold">O(1) Direct Lookup</span></p>
+                <p>• Binary Tree: <span class="text-[#488df4] font-mono font-semibold">In-Order Sorted</span></p>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="flex-1 overflow-y-auto bg-[#f8f9fa] p-6 md:p-8">
+            <div class="max-w-6xl mx-auto space-y-6">
+
+                <!-- TAB 1: OPERATIONAL DASHBOARD -->
+                <section id="tab-dashboard" class="space-y-6">
+                    
+                    <!-- SALES ACTIVITY PIPELINE (IMAGE 51) -->
+                    <div class="bg-white p-5 rounded-lg border border-[#e5e9f0] shadow-sm">
+                        <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Sales Activity</h4>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div class="border-r border-slate-100 last:border-none p-2">
+                                <h3 id="sa-packed" class="text-3xl font-extrabold text-[#488df4]">0</h3>
+                                <p class="text-[11px] font-semibold text-slate-500 mt-1 uppercase tracking-wide">To Be Packed</p>
+                            </div>
+                            <div class="border-r border-slate-100 last:border-none p-2">
+                                <h3 id="sa-shipped" class="text-3xl font-extrabold text-blue-500">0</h3>
+                                <p class="text-[11px] font-semibold text-slate-500 mt-1 uppercase tracking-wide">To Be Shipped</p>
+                            </div>
+                            <div class="border-r border-slate-100 last:border-none p-2">
+                                <h3 id="sa-delivered" class="text-3xl font-extrabold text-emerald-600">0</h3>
+                                <p class="text-[11px] font-semibold text-slate-500 mt-1 uppercase tracking-wide">To Be Delivered</p>
+                            </div>
+                            <div class="p-2">
+                                <h3 id="sa-invoiced" class="text-3xl font-extrabold text-indigo-600">0</h3>
+                                <p class="text-[11px] font-semibold text-slate-500 mt-1 uppercase tracking-wide">To Be Invoiced</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INVENTORY SUMMARY & PRODUCT DETAILS -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Inventory Summary -->
+                        <div class="bg-white p-5 rounded-lg border border-[#e5e9f0] shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Inventory Summary</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center py-2 border-b border-slate-50 text-xs">
+                                    <span class="text-slate-500 font-medium">Quantity In Hand</span>
+                                    <span id="kpi-total-qty" class="font-bold text-slate-900 text-base">0</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-slate-50 text-xs">
+                                    <span class="text-slate-500 font-medium">Total Inventory Valuation</span>
+                                    <span id="kpi-total-val" class="font-bold text-emerald-600 text-base">₹0.00</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 text-xs">
+                                    <span class="text-slate-500 font-medium">Quantity To Be Received</span>
+                                    <span id="kpi-to-receive" class="font-bold text-indigo-600 text-base">0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Details & Low Stock -->
+                        <div class="bg-white p-5 rounded-lg border border-[#e5e9f0] shadow-sm">
+                            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-4">Product Details</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center py-2 border-b border-slate-50 text-xs">
+                                    <span class="text-rose-600 font-medium flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Low Stock Items</span>
+                                    <span id="kpi-low-stock" class="font-bold text-rose-600 text-base">0</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-slate-50 text-xs">
+                                    <span class="text-slate-500 font-medium">All Item Groups</span>
+                                    <span id="kpi-item-groups" class="font-bold text-slate-900 text-base">0</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 text-xs">
+                                    <span class="text-slate-500 font-medium">Total Active Items</span>
+                                    <span id="kpi-total-products" class="font-bold text-slate-900 text-base">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hash Search Result Banner -->
+                    <div id="hashResultBanner" class="hidden p-3.5 bg-blue-50 border border-blue-200 text-blue-900 rounded text-xs flex justify-between items-center">
+                        <span id="hashResultText"></span>
+                        <button onclick="document.getElementById('hashResultBanner').classList.add('hidden')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- TOP SELLING & AUDIT LOGS -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Top Selling Items -->
+                        <div class="bg-white rounded-lg border border-[#e5e9f0] shadow-sm overflow-hidden">
+                            <div class="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Top Selling Items</h4>
+                                <span class="text-[10px] text-slate-400 font-medium">Auto-Ranked</span>
+                            </div>
+                            <div class="p-4" id="topSellingList">
+                                <p class="text-xs text-slate-400 py-2">No sales logged yet to rank top products.</p>
+                            </div>
+                        </div>
+
+                        <!-- Recent Stock Activity Audit Log -->
+                        <div class="bg-white rounded-lg border border-[#e5e9f0] shadow-sm overflow-hidden">
+                            <div class="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-clock-rotate-left text-[#488df4]"></i> Recent Transactions Log
+                                </h4>
+                            </div>
+                            <div class="p-4 space-y-2 max-h-64 overflow-y-auto" id="auditLogList"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: ITEM MASTER -->
+                <section id="tab-items" class="space-y-6 hidden">
+                    <div class="bg-white p-6 rounded-lg border border-[#e5e9f0] shadow-sm">
+                        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                            <h3 class="text-sm font-bold text-slate-800">Add Product to Inventory Master</h3>
+                            <span class="text-xs text-slate-500">Hash O(1) Indexed</span>
+                        </div>
+                        <form id="addItemForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Product ID</label>
+                                <input type="text" id="item_id" placeholder="e.g. 101" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Item Name</label>
+                                <input type="text" id="item_name" placeholder="Item Name" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Category / Group</label>
+                                <input type="text" id="item_category" placeholder="Electronics / Accessories" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Initial Stock</label>
+                                <input type="number" id="item_qty" min="0" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Cost Price (₹)</label>
+                                <input type="number" step="0.01" id="item_cost" min="0" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Selling Price (₹)</label>
+                                <input type="number" step="0.01" id="item_sell" min="0" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div class="sm:col-span-3 flex justify-end pt-2">
+                                <button type="submit" class="px-5 py-2 bg-[#488df4] hover:bg-[#357ae8] text-white font-semibold rounded text-xs transition">Save to Item Master</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- BST Sorted Table -->
+                    <div class="bg-white rounded-lg border border-[#e5e9f0] shadow-sm overflow-hidden">
+                        <div class="p-3.5 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                            <span class="text-xs font-bold text-slate-700">Master Catalog (BST In-Order Sorted)</span>
+                            <button onclick="refreshAll()" class="text-xs text-[#488df4] hover:underline">Refresh List</button>
+                        </div>
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-400 uppercase border-b border-slate-200 text-[10px]">
+                                <tr>
+                                    <th class="p-3.5">ID</th>
+                                    <th class="p-3.5">Name</th>
+                                    <th class="p-3.5">Category</th>
+                                    <th class="p-3.5">Stock</th>
+                                    <th class="p-3.5">Cost</th>
+                                    <th class="p-3.5">Selling Price</th>
+                                    <th class="p-3.5 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="masterTableBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- TAB 3: SALES ORDERS -->
+                <section id="tab-sales" class="space-y-8 hidden">
+                    <div class="bg-white p-6 rounded-lg border border-[#e5e9f0] shadow-sm max-w-lg mx-auto">
+                        <h3 class="text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-file-invoice text-[#488df4]"></i> Dispatch Sales Order (Stock Deduct)
+                        </h3>
+                        <form id="saleForm" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Product ID</label>
+                                <input type="text" id="sale_pid" placeholder="Enter Product ID" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Customer / Client Name</label>
+                                <input type="text" id="sale_customer" placeholder="Customer Name" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Quantity Sold</label>
+                                <input type="number" id="sale_qty" min="1" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <button type="submit" class="w-full py-2.5 bg-[#488df4] hover:bg-[#357ae8] text-white font-semibold rounded text-xs transition mt-2">Confirm Sales Dispatch</button>
+                        </form>
+                    </div>
+
+                    <!-- Life cycle of a Sales Order -->
+                    <div class="pt-6 border-t border-slate-200/80 text-center">
+                        <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">Life cycle of a Sales Order</p>
+                        <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
+                            <div class="step-box"><i class="fa-regular fa-user text-blue-500"></i> Customer Request</div>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>
+                            <div class="step-box"><i class="fa-regular fa-file-lines text-indigo-500"></i> Create Sales Order</div>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>
+                            <div class="step-box"><i class="fa-regular fa-circle-check text-emerald-500"></i> Confirm Order</div>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>
+                            <div class="step-box bg-blue-50 border-blue-300 text-blue-700 font-bold"><i class="fa-solid fa-truck-fast"></i> Ship & Deduct Stock</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 4: PURCHASES -->
+                <section id="tab-purchases" class="space-y-8 hidden">
+                    <div class="bg-white p-6 rounded-lg border border-[#e5e9f0] shadow-sm max-w-lg mx-auto">
+                        <h3 class="text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
+                            <i class="fa-solid fa-truck-ramp-box text-emerald-600"></i> Inbound Purchase Receive (Stock In)
+                        </h3>
+                        <form id="purchaseForm" class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Product ID</label>
+                                <input type="text" id="purchase_pid" placeholder="Enter Product ID" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Vendor / Supplier Name</label>
+                                <input type="text" id="purchase_vendor" placeholder="Supplier Name" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Quantity Received</label>
+                                <input type="number" id="purchase_qty" min="1" required class="w-full bg-slate-50 border border-slate-200 p-2 rounded text-xs focus:border-[#488df4] outline-none">
+                            </div>
+                            <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded text-xs transition mt-2">Receive Goods Into Stock</button>
+                        </form>
+                    </div>
+
+                    <!-- Life cycle of a Purchase Order -->
+                    <div class="pt-6 border-t border-slate-200/80 text-center">
+                        <p class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-4">Life cycle of a Purchase Order</p>
+                        <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
+                            <div class="step-box"><i class="fa-regular fa-file-lines text-blue-500"></i> Raise Purchase Order</div>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>
+                            <div class="step-box"><i class="fa-regular fa-clock text-amber-500"></i> Convert to Open</div>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>
+                            <div class="step-box bg-emerald-50 border-emerald-300 text-emerald-700 font-bold"><i class="fa-solid fa-box text-emerald-600"></i> Receive Goods (+Stock)</div>
+                            <i class="fa-solid fa-arrow-right text-[10px] text-slate-300"></i>
+                            <div class="step-box"><i class="fa-regular fa-credit-card text-purple-500"></i> Record Payment</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- CLIENT SCRIPT -->
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+
+        function checkAuth() {
+            const user = localStorage.getItem("currentUser");
+            if (!user) {
+                document.getElementById("authScreen").classList.remove("hidden");
+            } else {
+                document.getElementById("authScreen").classList.add("hidden");
+                const userData = JSON.parse(user);
+                document.getElementById("userDisplayName").innerText = userData.full_name;
+                document.getElementById("userAvatar").innerText = userData.full_name.charAt(0).toUpperCase();
+                refreshAll();
+            }
+        }
+
+        function toggleAuth(type) {
+            if (type === 'signup') {
+                document.getElementById('loginBox').classList.add('hidden');
+                document.getElementById('signupBox').classList.remove('hidden');
+            } else {
+                document.getElementById('signupBox').classList.add('hidden');
+                document.getElementById('loginBox').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                email: document.getElementById('login_email').value.trim(),
+                password: document.getElementById('login_password').value
+            };
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem("currentUser", JSON.stringify(data.user));
+                checkAuth();
+            } else {
+                alert(data.detail);
+            }
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                full_name: document.getElementById('reg_name').value.trim(),
+                email: document.getElementById('reg_email').value.trim(),
+                password: document.getElementById('reg_password').value
+            };
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                alert(data.message);
+                toggleAuth('login');
+            } else {
+                alert(data.detail);
+            }
+        });
+
+        function handleLogout() {
+            if (confirm("Are you sure you want to sign out?")) {
+                localStorage.removeItem("currentUser");
+                location.reload();
+            }
+        }
+
+        function switchTab(tab) {
+            ['dashboard', 'items', 'sales', 'purchases'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                const btn = document.getElementById(`btn-${t}`);
+                if (btn) btn.classList.remove('zoho-pill-active');
+            });
+
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tab}`);
+            if (activeBtn) activeBtn.classList.add('zoho-pill-active');
+
+            const titles = {
+                'dashboard': 'Dashboard',
+                'items': 'All Items',
+                'sales': 'All Sales Orders',
+                'purchases': 'All Purchase Orders'
+            };
+            document.getElementById('subHeaderTitle').innerHTML = `${titles[tab]} <i class="fa-solid fa-chevron-down text-[11px] text-slate-500"></i>`;
+            refreshAll();
+        }
+
+        function handleNewBtnAction() {
+            switchTab('items');
+        }
+
+        document.getElementById('hashSearchInput').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const pid = e.target.value.trim();
+                if (!pid) return;
+                const res = await fetch(`${API_URL}/products/${pid}`);
+                const banner = document.getElementById('hashResultBanner');
+                const text = document.getElementById('hashResultText');
+                banner.classList.remove('hidden');
+                if (res.ok) {
+                    const p = await res.json();
+                    text.innerHTML = `<strong>O(1) Hash Found:</strong> ID: ${p.product_id} | ${p.name} (${p.category}) | Current Stock: ${p.quantity} | Selling Price: ₹${p.selling_price}`;
+                } else {
+                    text.innerHTML = `<strong>Not Found:</strong> Item ID '${pid}' does not exist in master index.`;
+                }
+            }
+        });
+
+        async function fetchKPIs() {
+            try {
+                const res = await fetch(`${API_URL}/summary`);
+                const data = await res.json();
+                
+                document.getElementById('kpi-total-products').innerText = data.total_products;
+                document.getElementById('kpi-total-qty').innerText = data.total_quantity;
+                document.getElementById('kpi-total-val').innerText = `₹${data.total_value.toFixed(2)}`;
+                document.getElementById('kpi-low-stock').innerText = data.low_stock_count;
+                document.getElementById('kpi-item-groups').innerText = data.total_categories;
+
+                let packed = 0, shipped = 0, delivered = 0, invoiced = 0;
+                data.recent_transactions.forEach(tx => {
+                    if (tx.type === 'SALE') {
+                        packed += tx.quantity;
+                        shipped += 1;
+                        delivered += 1;
+                        invoiced += tx.quantity;
+                    }
+                });
+                document.getElementById('sa-packed').innerText = packed;
+                document.getElementById('sa-shipped').innerText = shipped;
+                document.getElementById('sa-delivered').innerText = delivered;
+                document.getElementById('sa-invoiced').innerText = invoiced;
+
+                const topBox = document.getElementById('topSellingList');
+                if (!data.top_selling || data.top_selling.length === 0) {
+                    topBox.innerHTML = `<p class="text-xs text-slate-400 py-2">No sales logged yet to rank top products.</p>`;
+                } else {
+                    topBox.innerHTML = "";
+                    data.top_selling.forEach((item, idx) => {
+                        topBox.innerHTML += `
+                            <div class="flex justify-between items-center py-2 border-b border-slate-50 last:border-none text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center justify-center text-[10px]">${idx + 1}</span>
+                                    <span class="font-medium text-slate-800">${item.name}</span>
+                                </div>
+                                <span class="font-bold text-[#488df4]">${item.sold_qty} sold</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                const auditBox = document.getElementById('auditLogList');
+                auditBox.innerHTML = "";
+                if (data.recent_transactions.length === 0) {
+                    auditBox.innerHTML = `<p class="text-xs text-slate-400 py-1">No transaction records logged.</p>`;
+                } else {
+                    data.recent_transactions.forEach(tx => {
+                        const isSale = tx.type === 'SALE';
+                        auditBox.innerHTML += `
+                            <div class="flex items-center justify-between p-2 rounded border border-slate-100 bg-slate-50 text-[11px]">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${isSale ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}">${isSale ? 'SALE' : 'PURCHASE'}</span>
+                                    <span><b>${tx.name}</b> (Qty: ${tx.quantity})</span>
+                                </div>
+                                <span class="text-slate-400 text-[10px] font-mono">${tx.date}</span>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function fetchProducts() {
+            try {
+                const res = await fetch(`${API_URL}/products`);
+                const items = await res.json();
+                const tbody = document.getElementById('masterTableBody');
+                tbody.innerHTML = "";
+                if (items.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-400">No products configured in catalog yet.</td></tr>`;
+                    return;
+                }
+                items.forEach(p => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-3 font-mono font-bold text-[#488df4]">${p.product_id}</td>
+                            <td class="p-3 font-medium text-slate-800">${p.name}</td>
+                            <td class="p-3"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px]">${p.category}</span></td>
+                            <td class="p-3 font-semibold ${p.quantity <= 5 ? 'text-rose-600' : 'text-slate-800'}">${p.quantity}</td>
+                            <td class="p-3 text-slate-500">₹${p.cost_price.toFixed(2)}</td>
+                            <td class="p-3 font-medium text-slate-800">₹${p.selling_price.toFixed(2)}</td>
+                            <td class="p-3 text-right">
+                                <button onclick="deleteProduct('${p.product_id}')" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function quickRefill(pid) {
+            switchTab('purchases');
+            document.getElementById('purchase_pid').value = pid;
+        }
+
+        async function deleteProduct(pid) {
+            if (confirm(`Remove item ID ${pid}?`)) {
+                await fetch(`${API_URL}/products/${pid}`, { method: 'DELETE' });
+                refreshAll();
+            }
+        }
+
+        document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                product_id: document.getElementById('item_id').value.trim(),
+                name: document.getElementById('item_name').value.trim(),
+                category: document.getElementById('item_category').value.trim(),
+                quantity: parseInt(document.getElementById('item_qty').value),
+                cost_price: parseFloat(document.getElementById('item_cost').value),
+                selling_price: parseFloat(document.getElementById('item_sell').value)
+            };
+            await fetch(`${API_URL}/products`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            document.getElementById('addItemForm').reset();
+            alert("Product saved successfully to Item Master!");
+            refreshAll();
+        });
+
+        document.getElementById('saleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                product_id: document.getElementById('sale_pid').value.trim(),
+                customer_name: document.getElementById('sale_customer').value.trim(),
+                quantity: parseInt(document.getElementById('sale_qty').value)
+            };
+            const res = await fetch(`${API_URL}/sales`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (!res.ok) alert(`Error: ${data.detail}`);
+            else {
+                alert(data.message);
+                document.getElementById('saleForm').reset();
+                switchTab('dashboard');
+            }
+        });
+
+        document.getElementById('purchaseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                product_id: document.getElementById('purchase_pid').value.trim(),
+                vendor_name: document.getElementById('purchase_vendor').value.trim(),
+                quantity: parseInt(document.getElementById('purchase_qty').value)
+            };
+            const res = await fetch(`${API_URL}/purchases`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (!res.ok) alert(`Error: ${data.detail}`);
+            else {
+                alert(data.message);
+                document.getElementById('purchaseForm').reset();
+                switchTab('dashboard');
+            }
+        });
+
+        function refreshAll() {
+            fetchKPIs();
+            fetchProducts();
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>

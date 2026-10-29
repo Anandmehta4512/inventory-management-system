@@ -1,0 +1,38 @@
+{
+    "users": {
+        "admin@stockdesk.com": {
+            "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+            "full_name": "Administrator",
+            "created_at": "29-10-2026 13:53"
+        }
+    },
+    "products": {
+        "101": {
+            "name": "Dell Moniter",
+            "category": "electronic",
+            "quantity": 15,
+            "cost_price": 8500.0,
+            "selling_price": 11500.0
+        }
+    },
+    "transactions": [
+        {
+            "type": "PURCHASE",
+            "product_id": "101",
+            "name": "Dell Moniter",
+            "quantity": 10,
+            "total_cost": 85000.0,
+            "party": "supertron Electronic",
+            "date": "29-10-2026 13:49"
+        },
+        {
+            "type": "SALE",
+            "product_id": "101",
+            "name": "Dell Moniter",
+            "quantity": 16,
+            "total_price": 184000.0,
+            "party": "Aman Shrama",
+            "date": "29-10-2026 13:47"
+        }
+    ]
+}
